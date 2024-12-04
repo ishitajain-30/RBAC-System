@@ -1,11 +1,11 @@
-import { create } from 'zustand';
-import type { User } from '../types/auth';
+import { create } from "zustand";
+import type { User } from "../types/auth";
 
 interface UserState {
   users: User[];
   isLoading: boolean;
   fetchUsers: () => Promise<void>;
-  addUser: (user: Omit<User, 'id'>) => Promise<void>;
+  addUser: (user: Omit<User, "id">) => Promise<void>;
   updateUser: (id: string, user: Partial<User>) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
 }
@@ -20,18 +20,32 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({
       users: [
         {
-          id: '1',
-          name: 'John Doe',
-          email: 'john@example.com',
-          roles: [{ id: '1', name: 'Admin', description: 'Administrator', permissions: [] }],
-          status: 'active',
+          id: "1",
+          name: "Ishita Jain",
+          email: "ishita@gmail.com",
+          roles: [
+            {
+              id: "1",
+              name: "Admin",
+              description: "Administrator",
+              permissions: [],
+            },
+          ],
+          status: "active",
         },
         {
-          id: '2',
-          name: 'Jane Smith',
-          email: 'jane@example.com',
-          roles: [{ id: '2', name: 'User', description: 'Regular User', permissions: [] }],
-          status: 'active',
+          id: "2",
+          name: "Shreedhar Joshi",
+          email: "shreedhar@gmail.com",
+          roles: [
+            {
+              id: "2",
+              name: "User",
+              description: "Regular User",
+              permissions: [],
+            },
+          ],
+          status: "active",
         },
       ],
       isLoading: false,
