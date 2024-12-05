@@ -22,7 +22,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         {
           id: "1",
           name: "Ishita Jain",
-          email: "ishita@gmail.com",
+          email: "ishita@example.com",
           roles: [
             {
               id: "1",
@@ -36,7 +36,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         {
           id: "2",
           name: "Shreedhar Joshi",
-          email: "shreedhar@gmail.com",
+          email: "shreedhar@example.com",
           roles: [
             {
               id: "2",

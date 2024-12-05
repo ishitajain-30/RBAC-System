@@ -3,7 +3,7 @@ export interface User {
   name: string;
   email: string;
   roles: Role[];
-  status: "active" | "inactive";
+  status: 'active' | 'inactive';
 }
 
 export interface Role {
