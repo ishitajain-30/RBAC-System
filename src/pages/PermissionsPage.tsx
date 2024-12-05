@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
-import { PlusCircle } from "lucide-react";
-import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
-import { Table } from "../components/ui/Table";
-import { Modal } from "../components/ui/Modal";
-import { usePermissionStore } from "../store/permissionStore";
-import type { Permission } from "../types/auth";
-import toast from "react-hot-toast";
+import { useEffect, useState } from 'react';
+import { PlusCircle } from 'lucide-react';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Table } from '../components/ui/Table';
+import { Modal } from '../components/ui/Modal';
+import { SearchInput } from '../components/ui/SearchInput';
+import { usePermissionStore } from '../store/permissionStore';
+import { useSearch } from '../hooks/useSearch';
+import type { Permission } from '../types/auth';
+import toast from 'react-hot-toast';
 
 export function PermissionsPage() {
   const {
@@ -14,13 +16,20 @@ export function PermissionsPage() {
     isLoading,
     fetchPermissions,
     addPermission,
+    updatePermission,
     deletePermission,
   } = usePermissionStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newPermission, setNewPermission] = useState({
-    name: "",
-    description: "",
+  const [editingPermission, setEditingPermission] = useState<Permission | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
   });
+
+  const { searchQuery, setSearchQuery, filteredItems: filteredPermissions } = useSearch(
+    permissions,
+    ['name', 'description']
+  );
 
   useEffect(() => {
     fetchPermissions();
@@ -29,23 +38,53 @@ export function PermissionsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await addPermission(newPermission);
+      if (editingPermission) {
+        await updatePermission(editingPermission.id, formData);
+        toast.success('Permission updated successfully');
+      } else {
+        await addPermission(formData);
+        toast.success('Permission added successfully');
+      }
       setIsModalOpen(false);
-      setNewPermission({ name: "", description: "" });
-      toast.success("Permission added successfully");
+      resetForm();
     } catch (error) {
-      toast.error("Failed to add permission");
+      toast.error(
+        editingPermission
+          ? 'Failed to update permission'
+          : 'Failed to add permission'
+      );
     }
   };
 
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+    });
+    setEditingPermission(null);
+  };
+
+  const handleEdit = (permission: Permission) => {
+    setEditingPermission(permission);
+    setFormData({
+      name: permission.name,
+      description: permission.description,
+    });
+    setIsModalOpen(true);
+  };
+
   const columns = [
-    { header: "Name", accessor: "name" },
-    { header: "Description", accessor: "description" },
+    { header: 'Name', accessor: 'name' },
+    { header: 'Description', accessor: 'description' },
     {
-      header: "Actions",
+      header: 'Actions',
       accessor: (permission: Permission) => (
         <div className="flex gap-2">
-          <Button variant="secondary" size="sm">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => handleEdit(permission)}
+          >
             Edit
           </Button>
           <Button
@@ -54,9 +93,9 @@ export function PermissionsPage() {
             onClick={async () => {
               try {
                 await deletePermission(permission.id);
-                toast.success("Permission deleted successfully");
+                toast.success('Permission deleted successfully');
               } catch (error) {
-                toast.error("Failed to delete permission");
+                toast.error('Failed to delete permission');
               }
             }}
           >
@@ -77,34 +116,42 @@ export function PermissionsPage() {
         </Button>
       </div>
 
+      <div className="max-w-sm">
+        <SearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search permissions..."
+        />
+      </div>
+
       {isLoading ? (
         <div className="text-center py-4">Loading...</div>
       ) : (
-        <Table data={permissions} columns={columns} />
+        <Table data={filteredPermissions} columns={columns} />
       )}
 
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Add New Permission"
+        onClose={() => {
+          setIsModalOpen(false);
+          resetForm();
+        }}
+        title={editingPermission ? 'Edit Permission' : 'Add New Permission'}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             label="Name"
-            value={newPermission.name}
+            value={formData.name}
             onChange={(e) =>
-              setNewPermission({ ...newPermission, name: e.target.value })
+              setFormData({ ...formData, name: e.target.value })
             }
             required
           />
           <Input
             label="Description"
-            value={newPermission.description}
+            value={formData.description}
             onChange={(e) =>
-              setNewPermission({
-                ...newPermission,
-                description: e.target.value,
-              })
+              setFormData({ ...formData, description: e.target.value })
             }
             required
           />
@@ -112,11 +159,16 @@ export function PermissionsPage() {
             <Button
               type="button"
               variant="secondary"
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => {
+                setIsModalOpen(false);
+                resetForm();
+              }}
             >
               Cancel
             </Button>
-            <Button type="submit">Add Permission</Button>
+            <Button type="submit">
+              {editingPermission ? 'Update Permission' : 'Add Permission'}
+            </Button>
           </div>
         </form>
       </Modal>
